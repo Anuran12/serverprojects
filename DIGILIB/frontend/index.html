@@ -1,0 +1,119 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audit DIGILIB Search</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script>window.__API_BASE__ = "/api";</script>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div class="brand">
+          <div class="brand-logo">AD</div>
+          <div>
+            <h1>AUDIT DIGILIB SEARCH</h1>
+            <span>Semantic search for audit reports and findings</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn" id="userManagementBtn" style="display: none;">User Management</button>
+          <button class="btn primary" id="ingestBtn" style="display: none;">Ingest PDFs</button>
+          <button class="btn" id="logoutBtn">Logout</button>
+        </div>
+      </header>
+
+      <section class="search-bar">
+        <div class="search-card">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search audit phrases, controls, exceptions, or risks..."
+          />
+          <div class="toggle-group" style="justify-content: flex-end;">
+            <button class="toggle-btn active" data-search="semantic">Semantic</button>
+            <button class="toggle-btn" data-search="pgvector">PG Vector</button>
+            <button class="toggle-btn" data-search="keyword">Keyword</button>
+            <button class="toggle-btn" data-search="hybrid">Hybrid</button>
+          </div>
+          <button class="btn primary" id="searchBtn">Search</button>
+        </div>
+        <div class="filters" style="margin-top: 14px;">
+          <select id="filterYear">
+            <option value="">Audit Year</option>
+          </select>
+          <select id="filterDivision">
+            <option value="">Division</option>
+          </select>
+          <select id="filterType">
+            <option value="">Audit Type</option>
+          </select>
+          <select id="filterUnit">
+            <option value="">Unit</option>
+          </select>
+          <select id="filterManager">
+            <option value="">Audit Manager</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="layout">
+        <aside class="sidebar">
+          <div>
+            <h3>Search Intelligence</h3>
+            <p style="color: var(--fg-muted); margin: 6px 0 0;">Gmail-like semantic scanning across thousands of PDFs.</p>
+          </div>
+          <div class="stat">
+            <span>Total Documents</span>
+            <span class="pill" id="totalDocs">0</span>
+          </div>
+          <div class="stat">
+            <span>Indexed Chunks</span>
+            <span class="pill" id="totalChunks">0</span>
+          </div>
+          <div class="stat">
+            <span>Search Type</span>
+            <span class="pill" id="searchType">Semantic</span>
+          </div>
+          <div class="stat">
+            <span>Min Score</span>
+            <span class="pill" id="minScore">0.25</span>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="main-header" id="mainHeader">
+            <h2>Audit Search Results</h2>
+            <p id="mainSubtitle">Enter a search query to begin.</p>
+          </div>
+
+          <div class="spinner" id="loadingState" style="display: none;">
+            Searching audit documents...
+          </div>
+
+          <div class="empty-state" id="emptyState" style="display: none;">
+            <div style="font-size: 32px;">PDF</div>
+            <p>No results found</p>
+            <p>Try adjusting your search query or filters</p>
+          </div>
+
+          <div id="resultsList"></div>
+
+          <button class="btn load-more" id="loadMoreBtn" style="display: none;">Load More Results</button>
+
+          <div class="footer-stats" id="footerStats" style="display: none;">
+            <div><strong id="statTotal">0</strong>Total Results</div>
+            <div><strong id="statAvg">0</strong>Avg. Score</div>
+            <div><strong id="statTime">0 ms</strong>Search Time</div>
+            <div><strong id="statCache">No</strong>Cache Hit</div>
+          </div>
+        </main>
+      </section>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: apms-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: apms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - apms-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d apms"]
+      interval: 3s
+      timeout: 5s
+      retries: 15
+      start_period: 15s
+
+  backend:
+    build:
+      context: ./backend
+    container_name: apms-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      UPLOAD_DIR: /app/uploads/tasks
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: apms
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: change-this-in-prod
+      CLIENT_ORIGIN: ""
+      SOCKET_PATH: /projects/apms/socket.io
+    ports:
+      - "127.0.0.1:4001:4000"
+    volumes:
+      - apms-uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: apms-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_BASE_PATH: /projects/apms
+      NEXT_PUBLIC_API_BASE: /projects/apms/api
+      NEXT_PUBLIC_SOCKET_BASE: ""
+      NEXT_PUBLIC_SOCKET_PATH: /projects/apms/socket.io
+    ports:
+      - "127.0.0.1:3001:3000"
+
+volumes:
+  apms-db-data:
+  apms-uploads:

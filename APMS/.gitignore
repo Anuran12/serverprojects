@@ -1,0 +1,9 @@
+node_modules
+backend/uploads
+npm-debug.log
+.DS_Store
+.next
+dist
+*.tar
+*.tar.gz
+offline-images.tar

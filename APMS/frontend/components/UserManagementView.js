@@ -86,15 +86,18 @@ export default function UserManagementView({
   }
 
   return (
-    <main className="app-shell view-user-management">
-      <div className="view-header">
-        <h2>User Management</h2>
-        <button type="button" className="btn-primary" onClick={openAdd}>
-          Add New User
+    <main className="app-shell apms-page view-user-management">
+      <header className="apms-page-header">
+        <div>
+          <h1 className="apms-page-title">User management</h1>
+          <p className="apms-page-subtitle">Provision users, teams, and access roles.</p>
+        </div>
+        <button type="button" className="btn-primary apms-header-btn" onClick={openAdd}>
+          Add user
         </button>
-      </div>
+      </header>
 
-      <section className="user-list-wrap">
+      <section className="apms-panel user-list-wrap">
         <table className="user-table">
           <thead>
             <tr>
@@ -114,7 +117,7 @@ export default function UserManagementView({
                 <td>{u.email}</td>
                 <td>{u.team}</td>
                 <td>{u.role}</td>
-                <td>{u.managerName ?? "—"}</td>
+                <td>{u.managerName ?? "-"}</td>
                 <td>
                   <span
                     className={`status-badge ${u.isActive ? "active" : "inactive"}`}
@@ -125,14 +128,14 @@ export default function UserManagementView({
                 <td>
                   <button
                     type="button"
-                    className="btn-sm"
+                    className="btn-sm btn-secondary"
                     onClick={() => openEdit(u)}
                   >
                     Edit
                   </button>
                   <button
                     type="button"
-                    className="btn-sm"
+                    className="btn-sm btn-ghost"
                     onClick={() => onToggleActive(u.id, !u.isActive)}
                   >
                     {u.isActive ? "Deactivate" : "Activate"}
@@ -145,12 +148,12 @@ export default function UserManagementView({
       </section>
 
       {showForm && (
-        <div className="modal-overlay" onClick={closeForm}>
+        <div className="modal-overlay apms-modal-overlay" onClick={closeForm}>
           <div
-            className="modal-content"
+            className="modal-content apms-modal"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3>{editingUser ? "Edit User" : "Add New User"}</h3>
+            <h3 className="apms-modal-title">{editingUser ? "Edit user" : "Add user"}</h3>
             <form onSubmit={handleSubmit} className="user-form">
               <div className="form-group">
                 <label>Username</label>
@@ -182,7 +185,7 @@ export default function UserManagementView({
                   onChange={(e) =>
                     setForm((s) => ({ ...s, password: e.target.value }))}
                   required={!editingUser}
-                  placeholder={editingUser ? "••••••••" : ""}
+                  placeholder={editingUser ? "********" : ""}
                 />
               </div>
               <div className="form-group">
@@ -238,10 +241,10 @@ export default function UserManagementView({
                 </div>
               )}
               <div className="form-actions">
-                <button type="button" onClick={closeForm}>
+                <button type="button" className="btn-ghost" onClick={closeForm}>
                   Cancel
                 </button>
-                <button type="submit">
+                <button type="submit" className="btn-primary">
                   {editingUser ? "Update" : "Create"} User
                 </button>
               </div>

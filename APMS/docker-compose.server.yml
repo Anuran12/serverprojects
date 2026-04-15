@@ -1,0 +1,12 @@
+services:
+  backend:
+    environment:
+      CLIENT_ORIGIN: ""
+      SOCKET_PATH: /projects/apms/socket.io
+
+  frontend:
+    environment:
+      NEXT_PUBLIC_BASE_PATH: /projects/apms
+      NEXT_PUBLIC_API_BASE: /projects/apms/api
+      NEXT_PUBLIC_SOCKET_BASE: ""
+      NEXT_PUBLIC_SOCKET_PATH: /projects/apms/socket.io

@@ -17,6 +17,7 @@ services:
       start_period: 15s
 
   backend:
+    image: apms-backend:latest
     build:
       context: ./backend
     container_name: apms-backend
@@ -33,14 +34,15 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       JWT_SECRET: change-this-in-prod
-      CLIENT_ORIGIN: ""
-      SOCKET_PATH: /projects/apms/socket.io
+      CLIENT_ORIGIN: "http://localhost:3001,http://127.0.0.1:3001,http://localhost:3000,http://127.0.0.1:3000"
+      SOCKET_PATH: /socket.io
     ports:
       - "127.0.0.1:4001:4000"
     volumes:
       - apms-uploads:/app/uploads
 
   frontend:
+    image: apms-frontend:latest
     build:
       context: ./frontend
     container_name: apms-frontend
@@ -48,10 +50,10 @@ services:
     depends_on:
       - backend
     environment:
-      NEXT_PUBLIC_BASE_PATH: /projects/apms
-      NEXT_PUBLIC_API_BASE: /projects/apms/api
-      NEXT_PUBLIC_SOCKET_BASE: ""
-      NEXT_PUBLIC_SOCKET_PATH: /projects/apms/socket.io
+      NEXT_PUBLIC_BASE_PATH: ""
+      NEXT_PUBLIC_API_BASE: "http://localhost:4001/api"
+      NEXT_PUBLIC_SOCKET_BASE: "http://localhost:4001"
+      NEXT_PUBLIC_SOCKET_PATH: "/socket.io"
     ports:
       - "127.0.0.1:3001:3000"
 

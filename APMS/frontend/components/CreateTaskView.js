@@ -40,21 +40,30 @@ export default function CreateTaskView({ onCreateTask, embedded = false, onClose
 
   const content = (
     <>
-      <div className="view-header">
+      <div className="view-header view-header--inner apms-modal-head">
         <div>
-          <h2>Initiate New Task</h2>
-          <p className="view-desc">
-            All initiated tasks are reviewed and assigned by COE.
+          <h2 className="apms-inline-title" id="create-task-dialog-title">
+            Initiate task
+          </h2>
+          <p className="view-desc apms-inline-desc">
+            COE reviews and assigns every new lifecycle record.
           </p>
         </div>
         {embedded ? (
-          <button type="button" className="btn-ghost" onClick={onClose}>
-            Close
+          <button type="button" className="apms-modal-close" onClick={onClose} aria-label="Close">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden>
+              <path
+                d="M18 6L6 18M6 6l12 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
         ) : null}
       </div>
 
-      <form className="form-grid form-create-task" onSubmit={handleSubmit}>
+      <form className="form-grid form-create-task apms-modal-form" onSubmit={handleSubmit}>
           <div className="form-group full-width">
             <label>Task title</label>
             <input
@@ -137,9 +146,9 @@ export default function CreateTaskView({ onCreateTask, embedded = false, onClose
             ) : null}
           </div>
 
-          <div className="form-group full-width form-actions">
-            <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? "Submitting..." : "Initiate Task"}
+          <div className="form-group full-width form-actions apms-modal-actions">
+            <button type="submit" className="btn-primary apms-modal-submit" disabled={saving}>
+              {saving ? "Submitting…" : "Initiate task"}
             </button>
           </div>
       </form>
@@ -147,12 +156,12 @@ export default function CreateTaskView({ onCreateTask, embedded = false, onClose
   );
 
   if (embedded) {
-    return <section className="enterprise-panel">{content}</section>;
+    return <section className="apms-create-task-embed">{content}</section>;
   }
 
   return (
-    <main className="app-shell">
-      <section className="enterprise-panel">{content}</section>
+    <main className="app-shell apms-page">
+      <section className="enterprise-panel apms-panel">{content}</section>
     </main>
   );
 }

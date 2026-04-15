@@ -170,19 +170,21 @@ export default function StatusTasksPage() {
         />
 
         <div className="content-area">
-          <main className="app-shell">
-            <section className="view-header">
+          <main className="app-shell apms-page">
+            <header className="apms-page-header">
               <div>
-                <h2>{statusLabel} Tasks</h2>
-                <p className="view-desc">
+                <h1 className="apms-page-title">{statusLabel} tasks</h1>
+                <p className="apms-page-subtitle">
                   {auditor ? `${auditor.name} (${auditor.team}) · ` : ""}
-                  {filtered.length} task(s)
+                  {filtered.length} task{filtered.length === 1 ? "" : "s"}
                 </p>
               </div>
-              <button type="button" className="btn-ghost" onClick={goBack}>Back</button>
-            </section>
+              <button type="button" className="btn-ghost apms-header-btn" onClick={goBack}>
+                Back
+              </button>
+            </header>
 
-            <section className="enterprise-panel">
+            <section className="enterprise-panel apms-panel">
               <div className="status-task-list">
                 {pagedTasks.length === 0 ? (
                   <p className="view-desc">No tasks in this status.</p>

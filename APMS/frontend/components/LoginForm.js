@@ -7,10 +7,11 @@ export default function LoginForm({ onLogin, loading, error }) {
   const [password, setPassword] = useState("");
 
   return (
-    <div className="login-shell">
-      <div className="login-card">
-        <div className="ribbon">Audit Project Management</div>
-        <h1>Welcome Back</h1>
+    <div className="login-shell apms-login-shell">
+      <div className="login-card apms-login-card">
+        <div className="ribbon apms-login-ribbon">Audit project management</div>
+        <h1 className="apms-login-title">Welcome back</h1>
+        <p className="apms-login-lead">Sign in to the command center.</p>
         <form
           onSubmit={(e) => {
             e.preventDefault();

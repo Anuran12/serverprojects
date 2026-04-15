@@ -93,8 +93,8 @@ export default function AuditorPage({ params }) {
 
   if (user.role !== "MANAGER") {
     return (
-      <main className="app-shell">
-        <section className="enterprise-panel">
+      <main className="app-shell apms-page">
+        <section className="enterprise-panel apms-panel">
           <p className="view-desc">Only managers can access this page.</p>
           <button type="button" className="btn-ghost" onClick={() => router.push("/")}>Back</button>
         </section>
@@ -113,18 +113,28 @@ export default function AuditorPage({ params }) {
           onLogout={handleLogout}
         />
         <div className="content-area">
-          <main className="app-shell">
-            <section className="view-header">
+          <main className="app-shell apms-page">
+            <header className="apms-page-header">
               <div>
-                <h2>{auditor ? `${auditor.name} - Task Dashboard` : "Auditor Task Dashboard"}</h2>
-                <p className="view-desc">
-                  {auditor ? `${auditor.team} team · Current ${auditorTasks.filter((t) => t.status !== "COMPLETED").length} · Total ${auditorTasks.length}` : "Loading auditor details..."}
+                <h1 className="apms-page-title">
+                  {auditor ? `${auditor.name}` : "Auditor workspace"}
+                </h1>
+                <p className="apms-page-subtitle">
+                  {auditor
+                    ? `${auditor.team} · Active ${auditorTasks.filter((t) => t.status !== "COMPLETED").length} · Total ${auditorTasks.length}`
+                    : "Loading…"}
                 </p>
               </div>
-              <button type="button" className="btn-ghost" onClick={() => router.push("/?tab=auditors-tasks")}>Back to Auditors Tasks</button>
-            </section>
+              <button
+                type="button"
+                className="btn-ghost apms-header-btn"
+                onClick={() => router.push("/?tab=auditors-tasks")}
+              >
+                Back
+              </button>
+            </header>
 
-            <section className="kanban-grid kanban-grid-5">
+            <section className="kanban-grid kanban-grid-5 apms-legacy-kanban">
               {STATUS_COLUMNS.map((column) => {
                 const columnTasks = auditorTasks.filter((t) => t.status === column.key);
                 return (

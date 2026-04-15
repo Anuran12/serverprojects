@@ -12,8 +12,9 @@ import UserManagementView from "../components/UserManagementView";
 import LoginForm from "../components/LoginForm";
 import { api, apiForm } from "../lib/api";
 
-const SOCKET_BASE = process.env.NEXT_PUBLIC_SOCKET_BASE || undefined;
-const SOCKET_PATH = process.env.NEXT_PUBLIC_SOCKET_PATH || "/projects/apms/socket.io";
+const SOCKET_BASE =
+  process.env.NEXT_PUBLIC_SOCKET_BASE || "http://localhost:4001";
+const SOCKET_PATH = process.env.NEXT_PUBLIC_SOCKET_PATH || "/socket.io";
 
 export default function HomePage() {
   const router = useRouter();
@@ -260,8 +261,14 @@ export default function HomePage() {
         />
         <div className="content-area">{renderContent()}</div>
         {createTaskOpen ? (
-          <div className="modal-overlay" onClick={() => setCreateTaskOpen(false)}>
-            <div className="modal-content create-task-modal-shell" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-overlay apms-modal-overlay" onClick={() => setCreateTaskOpen(false)}>
+            <div
+              className="modal-content apms-modal create-task-modal-shell"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="create-task-dialog-title"
+            >
               <CreateTaskView
                 embedded
                 onClose={() => setCreateTaskOpen(false)}

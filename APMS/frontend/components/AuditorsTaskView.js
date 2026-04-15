@@ -35,17 +35,15 @@ export default function AuditorsTaskView({ tasks, onStatusChange }) {
   const firstNewTask = columns.find((c) => c.key === "NEW")?.tasks?.[0] || null;
 
   return (
-    <main className="app-shell view-auditors-task">
-      <section className="view-header">
+    <main className="app-shell apms-page view-auditors-task">
+      <header className="apms-page-header">
         <div>
-          <h2 className="view-title">Auditors Task</h2>
-          <p className="view-desc">
-            View and manage tasks by status: New, In Progress, and Complete.
-          </p>
+          <h1 className="apms-page-title">Auditor task board</h1>
+          <p className="apms-page-subtitle">New, in progress, and complete—drag cards between columns.</p>
         </div>
         <button
           type="button"
-          className="btn-primary"
+          className="btn-primary apms-header-btn"
           disabled={!firstNewTask}
           onClick={() => {
             if (firstNewTask) onStatusChange(firstNewTask.id, "IN_PROGRESS");
@@ -53,7 +51,7 @@ export default function AuditorsTaskView({ tasks, onStatusChange }) {
         >
           Start
         </button>
-      </section>
+      </header>
       <section className="kanban-grid">
         {columns.map((column) => (
           <article
@@ -113,16 +111,18 @@ export default function AuditorsTaskView({ tasks, onStatusChange }) {
       </section>
 
       {pendingCompleteTask ? (
-        <div className="modal-overlay" onClick={() => setPendingCompleteTask(null)}>
+        <div className="modal-overlay apms-modal-overlay" onClick={() => setPendingCompleteTask(null)}>
           <div
             className="modal-content confirm-modal"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
           >
-            <h3>Are you sure to complete the task?</h3>
+            <h3>Complete this task?</h3>
             <p className="view-desc">{pendingCompleteTask.title}</p>
             <div className="form-actions">
-              <button type="button" onClick={() => setPendingCompleteTask(null)}>
-                No
+              <button type="button" className="btn-ghost" onClick={() => setPendingCompleteTask(null)}>
+                Cancel
               </button>
               <button
                 type="button"

@@ -102,11 +102,15 @@ function hydrateTaskRow(row, assigneesMap, attachmentsMap) {
   const assignees = assigneesMap[row.id] || [];
   const firstAssignee = assignees[0] || null;
   const managerNames = [...new Set(assignees.map((a) => a.managerName).filter(Boolean))];
+  const hasEndDate = Boolean(row.endDate) && !Number.isNaN(new Date(row.endDate).getTime());
 
   return {
     ...row,
     statusLabel: STATUS_LABEL[row.status] || row.status,
-    isOverdue: row.status !== STATUS.COMPLETED && new Date(row.endDate).getTime() < Date.now(),
+    isOverdue:
+      row.status !== STATUS.COMPLETED &&
+      hasEndDate &&
+      new Date(row.endDate).getTime() < Date.now(),
     assignees,
     assigneeIds: assignees.map((a) => a.id),
     assignedAuditorId: firstAssignee?.id ?? null,
@@ -123,17 +127,12 @@ function canViewTaskRow(user, task) {
   if (isCoeUser(user)) return true;
   if (user.role === "ADMIN") return true;
   if (user.role === "MANAGER") return true;
+  if (task.createdBy === user.id) return true;
 
   if (task.status === STATUS.INITIATED) return false;
 
   if (user.role === "AUDITOR") {
     if (task.assigneeIds?.includes(user.id)) return true;
-    if (
-      task.createdBy === user.id &&
-      [STATUS.INPROGRESS_UAT, STATUS.COMPLETED].includes(task.status)
-    ) {
-      return true;
-    }
   }
 
   return false;
@@ -269,12 +268,8 @@ router.get("/tasks", requireAuth, async (req, res) => {
           FROM task_assignees ta
           WHERE ta.task_id = t.id AND ta.user_id = $1
         )
-        OR (
-          t.created_by = $1
-          AND t.status IN ('${STATUS.INPROGRESS_UAT}', '${STATUS.COMPLETED}')
-        )
+        OR t.created_by = $1
       )
-      AND t.status <> '${STATUS.INITIATED}'
     `;
   }
 
@@ -307,21 +302,20 @@ router.post("/tasks", requireAuth, uploadTasksMiddleware, async (req, res) => {
   const description = (req.body.description || "").trim() || "(No description)";
   const priority = req.body.priority || "MEDIUM";
   const startDate = req.body.startDate;
-  const endDate = req.body.endDate;
   const remarks = (req.body.remarks || "").trim();
   const parentTaskId =
     req.body.parentTaskId && String(req.body.parentTaskId).trim() !== ""
       ? Number(req.body.parentTaskId)
       : null;
 
-  if (!title || !startDate || !endDate) {
+  if (!title || !startDate) {
     for (const f of files) safeUnlink(f.filename);
     return res.status(400).json({ message: "Missing required fields" });
   }
 
-  if (new Date(endDate).getTime() < new Date(startDate).getTime()) {
+  if (new Date(startDate).getTime() < new Date(new Date().toISOString().slice(0, 10)).getTime()) {
     for (const f of files) safeUnlink(f.filename);
-    return res.status(400).json({ message: "End date must be after start date" });
+    return res.status(400).json({ message: "Start date cannot be in the past" });
   }
 
   let task;
@@ -336,7 +330,7 @@ router.post("/tasks", requireAuth, uploadTasksMiddleware, async (req, res) => {
         priority,
         STATUS.INITIATED,
         startDate,
-        endDate,
+        null,
         req.user.id,
         parentTaskId,
         remarks
@@ -385,6 +379,10 @@ router.post("/tasks", requireAuth, uploadTasksMiddleware, async (req, res) => {
 router.patch("/tasks/:id/assign", requireAuth, async (req, res) => {
   const taskId = Number(req.params.id);
   const assigneeIds = parseAssigneeIds(req.body);
+  const endDate =
+    req.body?.endDate && String(req.body.endDate).trim() !== ""
+      ? String(req.body.endDate).slice(0, 10)
+      : null;
 
   if (!Number.isFinite(taskId) || assigneeIds.length === 0) {
     return res.status(400).json({ message: "Invalid task id or assignees" });
@@ -399,6 +397,15 @@ router.patch("/tasks/:id/assign", requireAuth, async (req, res) => {
 
   if (![STATUS.INITIATED, STATUS.INPROGRESS_UAT].includes(task.status)) {
     return res.status(400).json({ message: "Task cannot be assigned in current status" });
+  }
+
+  if (task.status === STATUS.INITIATED) {
+    if (!endDate) {
+      return res.status(400).json({ message: "End date is required while assigning initiated tasks" });
+    }
+    if (new Date(endDate).getTime() < new Date(task.startDate).getTime()) {
+      return res.status(400).json({ message: "End date must be on or after start date" });
+    }
   }
 
   const assignees = await query(
@@ -434,6 +441,7 @@ router.patch("/tasks/:id/assign", requireAuth, async (req, res) => {
   await query(
     `UPDATE tasks
      SET status = $1,
+         end_date = CASE WHEN $5::date IS NULL THEN end_date ELSE $5::date END,
          assigned_by = $2,
          assigned_at = now(),
          development_started_at = NULL,
@@ -447,7 +455,7 @@ router.patch("/tasks/:id/assign", requireAuth, async (req, res) => {
          last_reassigned_at = CASE WHEN $4 THEN now() ELSE last_reassigned_at END,
          completed_at = NULL
      WHERE id = $3`,
-    [STATUS.ASSIGNED, req.user.id, taskId, task.status === STATUS.INPROGRESS_UAT]
+    [STATUS.ASSIGNED, req.user.id, taskId, task.status === STATUS.INPROGRESS_UAT, endDate]
   );
 
   const updated = await getTaskById(taskId);
@@ -609,6 +617,10 @@ router.patch("/tasks/:id/uat-approve", requireAuth, async (req, res) => {
 router.patch("/tasks/:id/uat-reassign", requireAuth, async (req, res) => {
   const taskId = Number(req.params.id);
   const assigneeIds = parseAssigneeIds(req.body);
+  const endDate =
+    req.body?.endDate && String(req.body.endDate).trim() !== ""
+      ? String(req.body.endDate).slice(0, 10)
+      : null;
 
   if (!Number.isFinite(taskId) || assigneeIds.length === 0) {
     return res.status(400).json({ message: "Invalid task id or assignees" });
@@ -619,6 +631,10 @@ router.patch("/tasks/:id/uat-reassign", requireAuth, async (req, res) => {
 
   if (task.status !== STATUS.INPROGRESS_UAT) {
     return res.status(400).json({ message: "Task is not in UAT phase" });
+  }
+
+  if (endDate && new Date(endDate).getTime() < new Date(task.startDate).getTime()) {
+    return res.status(400).json({ message: "End date must be on or after start date" });
   }
 
   const isInitiator = req.user.id === task.createdBy;
@@ -661,6 +677,7 @@ router.patch("/tasks/:id/uat-reassign", requireAuth, async (req, res) => {
   await query(
     `UPDATE tasks
      SET status = $1,
+         end_date = CASE WHEN $4::date IS NULL THEN end_date ELSE $4::date END,
          assigned_by = $2,
          assigned_at = now(),
          development_started_at = NULL,
@@ -674,7 +691,7 @@ router.patch("/tasks/:id/uat-reassign", requireAuth, async (req, res) => {
          last_reassigned_at = now(),
          completed_at = NULL
      WHERE id = $3`,
-    [STATUS.ASSIGNED, req.user.id, taskId]
+    [STATUS.ASSIGNED, req.user.id, taskId, endDate]
   );
 
   const updated = await getTaskById(taskId);

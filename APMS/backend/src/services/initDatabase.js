@@ -86,6 +86,10 @@ export async function initDatabase() {
     ALTER TABLE tasks ADD COLUMN IF NOT EXISTS last_reassigned_at TIMESTAMPTZ;
   `);
 
+  await query(`
+    ALTER TABLE tasks ALTER COLUMN end_date DROP NOT NULL;
+  `);
+
   // Drop any legacy status check before migrating old values, otherwise
   // existing constraints (NEW/IN_PROGRESS/OVERDUE) reject INITIATED updates.
   await query(`

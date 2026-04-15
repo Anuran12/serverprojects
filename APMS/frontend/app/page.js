@@ -77,7 +77,6 @@ export default function HomePage() {
     fd.append("description", fields.description || "");
     fd.append("priority", fields.priority || "MEDIUM");
     fd.append("startDate", fields.startDate || "");
-    fd.append("endDate", fields.endDate || "");
     fd.append("remarks", fields.remarks || "");
     for (const file of files) fd.append("attachments", file);
     await apiForm("/tasks", { method: "POST", body: fd }, token);
@@ -122,6 +121,20 @@ export default function HomePage() {
     if (!token) return;
     await api(`/users/${userId}`, { method: "PATCH", body: JSON.stringify({ isActive }) }, token);
     await refreshUsers();
+  }
+
+  async function handleBulkAddUsers(users) {
+    if (!token) throw new Error("Not signed in");
+    const result = await api(
+      "/users/bulk",
+      {
+        method: "POST",
+        body: JSON.stringify({ users })
+      },
+      token
+    );
+    await refreshUsers();
+    return result;
   }
 
   useEffect(() => {
@@ -223,6 +236,7 @@ export default function HomePage() {
             onAddUser={handleAddUser}
             onUpdateUser={handleUpdateUser}
             onToggleActive={handleToggleActive}
+            onBulkAddUsers={handleBulkAddUsers}
           />
         );
       default:

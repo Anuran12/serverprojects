@@ -11,8 +11,7 @@ export function signToken(user) {
       team: user.team,
       name: user.name
     },
-    JWT_SECRET,
-    { expiresIn: "15m" }
+    JWT_SECRET
   );
 }
 

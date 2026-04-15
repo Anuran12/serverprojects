@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 
 const ATTACHMENT_ACCEPT =
   ".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.rtf,.txt,.png,.jpg,.jpeg,.gif,.webp,.bmp,.svg,.zip,.7z,image/*";
+const todayYmd = () => new Date().toISOString().slice(0, 10);
 
 export default function CreateTaskView({ onCreateTask, embedded = false, onClose }) {
   const fileInputRef = useRef(null);
@@ -12,8 +13,7 @@ export default function CreateTaskView({ onCreateTask, embedded = false, onClose
     title: "",
     description: "",
     priority: "MEDIUM",
-    startDate: "",
-    endDate: "",
+    startDate: todayYmd(),
     remarks: ""
   });
   const [saving, setSaving] = useState(false);
@@ -27,8 +27,7 @@ export default function CreateTaskView({ onCreateTask, embedded = false, onClose
         title: "",
         description: "",
         priority: "MEDIUM",
-        startDate: "",
-        endDate: "",
+        startDate: todayYmd(),
         remarks: ""
       });
       setAttachmentFiles([]);
@@ -93,16 +92,7 @@ export default function CreateTaskView({ onCreateTask, embedded = false, onClose
               type="date"
               value={form.startDate}
               onChange={(e) => setForm((s) => ({ ...s, startDate: e.target.value }))}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>End date</label>
-            <input
-              type="date"
-              value={form.endDate}
-              onChange={(e) => setForm((s) => ({ ...s, endDate: e.target.value }))}
+              min={todayYmd()}
               required
             />
           </div>

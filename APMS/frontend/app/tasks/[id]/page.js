@@ -123,11 +123,13 @@ export default function TaskPage({ params }) {
             task={task}
             auditors={auditors}
             onBack={() => router.push("/")}
-      onAssign={(id, assigneeIds) => runAction(`/tasks/${id}/assign`, { assigneeIds })}
+      onAssign={(id, assigneeIds, endDate) => runAction(`/tasks/${id}/assign`, { assigneeIds, endDate })}
             onStartDevelopment={(id) => runAction(`/tasks/${id}/start-development`)}
             onCompleteDevelopment={(id) => runAction(`/tasks/${id}/development-complete`)}
             onApproveUat={(id) => runAction(`/tasks/${id}/uat-approve`)}
-      onReassignUat={(id, assigneeIds) => runAction(`/tasks/${id}/uat-reassign`, { assigneeIds })}
+      onReassignUat={(id, assigneeIds, endDate) =>
+        runAction(`/tasks/${id}/uat-reassign`, { assigneeIds, endDate })
+      }
             onRefresh={refreshTask}
           />
         </div>

@@ -46,6 +46,7 @@ const LIFECYCLE_STEPS = [
 function stepRank(status) {
   return LIFECYCLE_STEPS.findIndex((s) => s.key === status);
 }
+const todayYmd = () => new Date().toISOString().slice(0, 10);
 
 function IconArrowLeft() {
   return (
@@ -59,6 +60,40 @@ function IconArrowLeft() {
         d="M15 18l-6-6 6-6"
         stroke="currentColor"
         strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconClose() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>
+      <path
+        d="M18 6L6 18M6 6l12 12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/** SVG tick so we do not rely on Unicode checkmark characters in source. */
+function IconWorkflowCheck() {
+  return (
+    <svg
+      className="wf-dot-check"
+      viewBox="0 0 14 14"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M3.2 7.2L5.9 9.8L10.8 4.2"
+        stroke="currentColor"
+        strokeWidth="1.85"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -100,6 +135,7 @@ export default function TaskDetailView({
   const remarksEndRef = useRef(null);
   const remarksScrollBehaviorRef = useRef("auto");
   const [auditorModal, setAuditorModal] = useState(null);
+  const [assignEndDate, setAssignEndDate] = useState("");
   const isCoe = user.role === "AUDITOR" && user.team === "COE";
 
   useEffect(() => {
@@ -132,6 +168,17 @@ export default function TaskDetailView({
   useEffect(() => {
     setSelectedAuditorIds((task?.assigneeIds || []).map(String));
   }, [task?.assigneeIds]);
+
+  useEffect(() => {
+    if (task?.endDate) {
+      const parsed = new Date(task.endDate);
+      if (!Number.isNaN(parsed.getTime())) {
+        setAssignEndDate(parsed.toISOString().slice(0, 10));
+        return;
+      }
+    }
+    setAssignEndDate(todayYmd());
+  }, [task?.id, task?.endDate]);
 
   useEffect(() => {
     if (!auditorModal) return;
@@ -266,15 +313,15 @@ export default function TaskDetailView({
                   <h3 className="task-detail-card-h">Ownership</h3>
                   <DetailRows
                     rows={[
-                      ["Initiated by", task.createdByName || "—"],
-                      ["Assigned by", task.assignedByName || "—"],
+                      ["Initiated by", task.createdByName || "\u2014"],
+                      ["Assigned by", task.assignedByName || "\u2014"],
                       [
                         "Assigned auditors",
                         (task.assignees || []).length
                           ? task.assignees.map((a) => a.name).join(", ")
-                          : "—",
+                          : "\u2014",
                       ],
-                      ["Managers", task.assignedAuditorManagerName || "—"],
+                      ["Managers", task.assignedAuditorManagerName || "\u2014"],
                     ]}
                   />
                 </div>
@@ -332,7 +379,7 @@ export default function TaskDetailView({
                           onClick={() => handleDownload(att)}
                         >
                           {downloadingId === att.id
-                            ? "Downloading…"
+                            ? "Downloading\u2026"
                             : "Download"}
                         </button>
                       </li>
@@ -361,14 +408,14 @@ export default function TaskDetailView({
                   <div className="workflow-overdue-alert task-detail-overdue">
                     <span className="task-detail-overdue-label">Past due</span>
                     <p
-                      title={`Due ${formatDate(task.endDate)} — advance or complete soon.`}
+                      title={`Due ${formatDate(task.endDate)} \u2014 advance or complete soon.`}
                     >
-                      Due {formatDate(task.endDate)} — advance or complete soon.
+                      Due {formatDate(task.endDate)} \u2014 advance or complete soon.
                     </p>
                   </div>
                 ) : null}
                 <div
-                  className="workflow-progress task-detail-workflow wf-progress-horizontal"
+                  className="workflow-progress task-detail-workflow wf-progress-horizontal wf-progress-rail"
                   role="group"
                   aria-label="Task lifecycle progress"
                 >
@@ -386,7 +433,7 @@ export default function TaskDetailView({
                             className={`wf-h-step ${completed ? "done" : ""} ${active ? "active" : ""}`}
                           >
                             <span className="wf-dot" aria-hidden>
-                              {completed ? "✓" : ""}
+                              {completed ? <IconWorkflowCheck /> : null}
                             </span>
                             <span
                               className="wf-label wf-label--compact"
@@ -515,7 +562,7 @@ export default function TaskDetailView({
                 <textarea
                   value={remarkText}
                   onChange={(e) => setRemarkText(e.target.value)}
-                  placeholder="Share a progress update…"
+                  placeholder={"Share a progress update\u2026"}
                 />
                 <button
                   type="button"
@@ -523,7 +570,7 @@ export default function TaskDetailView({
                   disabled={savingRemark || !remarkText.trim()}
                   onClick={handleSaveRemark}
                 >
-                  {savingRemark ? "Saving…" : "Save remark"}
+                  {savingRemark ? "Saving\u2026" : "Save remark"}
                 </button>
               </div>
             </section>
@@ -555,7 +602,7 @@ export default function TaskDetailView({
                 onClick={() => setAuditorModal(null)}
                 aria-label="Close"
               >
-                ×
+                <IconClose />
               </button>
             </div>
             <p className="task-assign-modal-lead">
@@ -563,6 +610,33 @@ export default function TaskDetailView({
                 ? "Select auditors to send back to development."
                 : "Select one or more auditors for this task."}
             </p>
+            <div className="task-assign-modal-summary">
+              <span>
+                Selected auditors: <strong>{selectedAuditorIds.length}</strong>
+              </span>
+            </div>
+            {auditorModal === "assign" || auditorModal === "reassign" ? (
+              <div className="form-group task-assign-date-group">
+                <label>{auditorModal === "reassign" ? "Update end date" : "End date"}</label>
+                <input
+                  type="date"
+                  value={assignEndDate}
+                  min={(() => {
+                    const taskStart = task?.startDate ? String(task.startDate).slice(0, 10) : "";
+                    const today = todayYmd();
+                    if (!taskStart) return today;
+                    return taskStart > today ? taskStart : today;
+                  })()}
+                  onChange={(e) => setAssignEndDate(e.target.value)}
+                  required
+                />
+                <small className="task-assign-date-hint">
+                  {auditorModal === "reassign"
+                    ? "You can revise the task end date while reassigning. Date cannot be before start date."
+                    : "End date is mandatory for first assignment and cannot be before start date."}
+                </small>
+              </div>
+            ) : null}
             <div className="task-assign-modal-body auditor-checklist">
               {Object.entries(auditorsByTeam).map(([team, list]) =>
                 list.length === 0 ? null : (
@@ -593,11 +667,15 @@ export default function TaskDetailView({
               <button
                 type="button"
                 className="btn-primary apms-modal-submit"
-                disabled={selectedAuditorIds.length === 0}
+                disabled={
+                  selectedAuditorIds.length === 0 ||
+                  (auditorModal === "assign" && !assignEndDate)
+                }
                 onClick={() => {
                   const ids = selectedAuditorIds.map(Number);
-                  if (auditorModal === "assign") onAssign(task.id, ids);
-                  else onReassignUat(task.id, ids);
+                  if (auditorModal === "assign")
+                    onAssign(task.id, ids, assignEndDate);
+                  else onReassignUat(task.id, ids, assignEndDate);
                   setAuditorModal(null);
                 }}
               >

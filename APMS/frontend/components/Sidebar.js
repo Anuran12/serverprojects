@@ -2,6 +2,7 @@
 
 export const TAB = {
   DASHBOARD: "dashboard",
+  PROFILE: "profile",
   AUDITORS_TASKS: "auditors-tasks",
   NOTIFICATIONS: "notifications",
   USER_MANAGEMENT: "user-management"
@@ -55,6 +56,22 @@ function IconNav({ name }) {
           />
         </svg>
       );
+    case "profile":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M12 12a4 4 0 100-8 4 4 0 000 8z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+          <path
+            d="M4 20a8 8 0 0116 0"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
     default:
       return null;
   }
@@ -73,6 +90,7 @@ export default function Sidebar({
 
   const tabs = [
     { id: TAB.DASHBOARD, label: "Task Workspace", icon: "workspace" },
+    { id: TAB.PROFILE, label: "Profile", icon: "profile" },
     ...(isManager
       ? [{ id: TAB.AUDITORS_TASKS, label: "Auditors Tasks", icon: "auditors" }]
       : []),

@@ -3172,6 +3172,44 @@ button:disabled,
   gap: 0.7rem;
 }
 
+.profile-card {
+  max-width: 760px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.profile-row span {
+  color: #64748b;
+  font-size: 0.84rem;
+}
+
+.profile-row strong {
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.profile-actions {
+  margin-top: 0.3rem;
+}
+
+.profile-success {
+  margin: 0;
+  color: #166534;
+  font-size: 0.86rem;
+}
+
 .bulk-upload-btn {
   position: relative;
   overflow: hidden;

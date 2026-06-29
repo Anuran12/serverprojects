@@ -1,6 +1,6 @@
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ||
-  "http://localhost:4001/api";
+  "/projects/apms/api";
 
 export async function api(path, options = {}, token = "") {
   const response = await fetch(`${API_BASE}${path}`, {
@@ -56,3 +56,4 @@ export async function fetchTaskAttachmentBlob(taskId, attachmentId, token) {
 }
 
 export { API_BASE };
+

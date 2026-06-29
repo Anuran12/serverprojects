@@ -9,12 +9,13 @@ import AuditorsTasksView from "../components/AuditorsTasksView";
 import CreateTaskView from "../components/CreateTaskView";
 import NotificationsView from "../components/NotificationsView";
 import UserManagementView from "../components/UserManagementView";
+import ProfileView from "../components/ProfileView";
 import LoginForm from "../components/LoginForm";
 import { api, apiForm } from "../lib/api";
 
 const SOCKET_BASE =
-  process.env.NEXT_PUBLIC_SOCKET_BASE || "http://localhost:4001";
-const SOCKET_PATH = process.env.NEXT_PUBLIC_SOCKET_PATH || "/socket.io";
+  process.env.NEXT_PUBLIC_SOCKET_BASE || undefined;
+const SOCKET_PATH = process.env.NEXT_PUBLIC_SOCKET_PATH || "/projects/apms/socket.io";
 
 export default function HomePage() {
   const router = useRouter();
@@ -137,6 +138,18 @@ export default function HomePage() {
     return result;
   }
 
+  async function handleChangePassword(payload) {
+    if (!token) throw new Error("Not signed in");
+    await api(
+      "/me/password",
+      {
+        method: "PATCH",
+        body: JSON.stringify(payload)
+      },
+      token
+    );
+  }
+
   useEffect(() => {
     const stored = localStorage.getItem("apms_token");
     if (!stored) return;
@@ -167,7 +180,8 @@ export default function HomePage() {
       if (
         tab === TAB.NOTIFICATIONS ||
         tab === TAB.USER_MANAGEMENT ||
-        tab === TAB.AUDITORS_TASKS
+        tab === TAB.AUDITORS_TASKS ||
+        tab === TAB.PROFILE
       ) {
         setActiveTab(tab);
         return;
@@ -229,6 +243,8 @@ export default function HomePage() {
         );
       case TAB.NOTIFICATIONS:
         return <NotificationsView notifications={notifications} onMarkAll={handleMarkAll} />;
+      case TAB.PROFILE:
+        return <ProfileView user={user} onChangePassword={handleChangePassword} />;
       case TAB.USER_MANAGEMENT:
         return (
           <UserManagementView
@@ -295,3 +311,4 @@ export default function HomePage() {
     </div>
   );
 }
+

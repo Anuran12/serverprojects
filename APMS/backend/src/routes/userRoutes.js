@@ -100,6 +100,45 @@ router.get("/me", requireAuth, async (req, res) => {
   return res.json(result.rows[0]);
 });
 
+router.patch("/me/password", requireAuth, async (req, res) => {
+  const currentPassword = String(req.body?.currentPassword || "");
+  const newPassword = String(req.body?.newPassword || "");
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: "Current password and new password are required" });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ message: "New password must be at least 8 characters" });
+  }
+
+  const row = await query(
+    `SELECT password_hash AS "passwordHash"
+     FROM users
+     WHERE id = $1`,
+    [req.user.id]
+  );
+
+  if (row.rowCount === 0) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  const valid = await bcrypt.compare(currentPassword, row.rows[0].passwordHash);
+  if (!valid) {
+    return res.status(400).json({ message: "Current password is incorrect" });
+  }
+
+  const hash = await bcrypt.hash(newPassword, 12);
+  await query(
+    `UPDATE users
+     SET password_hash = $1
+     WHERE id = $2`,
+    [hash, req.user.id]
+  );
+
+  return res.json({ success: true });
+});
+
 router.get("/users", requireAuth, async (req, res) => {
   const result = await query(
     `SELECT u.id, u.name, u.email, u.role, u.team, u.is_active AS "isActive",
